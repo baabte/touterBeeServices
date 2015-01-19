@@ -31,6 +31,31 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
+#facebook AppId
+FACEBOOK_APP_ID = '610577519050579'
+
+#facebook app screat id
+FACEBOOK_APP_SECRET = '281797352ce378d168bc40ce9afe3c2c'
+
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.contrib.auth.context_processors.auth',
+    'django.core.context_processors.debug',
+    'django.core.context_processors.i18n',
+    'django.core.context_processors.media',
+    'django.core.context_processors.static',
+    'django.core.context_processors.tz',
+    'django.core.context_processors.request',
+    'django.contrib.messages.context_processors.messages',
+    'django_facebook.context_processors.facebook',
+)
+
+AUTHENTICATION_BACKENDS = (
+    'django_facebook.auth_backends.FacebookBackend',
+    'django.contrib.auth.backends.ModelBackend',
+)
+
+AUTH_USER_MODEL = 'django_facebook.FacebookCustomUser'
+
 INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
@@ -41,6 +66,7 @@ INSTALLED_APPS = (
     'myapp',
     'rest_framework',
     'corsheaders',
+    'django_facebook',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -81,6 +107,9 @@ MONGO_DB = 'baabtra_db'  #Database name
 FILEUPLOAD_PATH="uploaded" #path for uploading the files
 RESUME_PATH='http://localhost:8000/files/resume/' #path for mailing the resume link
 LOGO_PATH='http://localhost:8000/files/companyLogo/' #path for mailing the resume link
+SOCIAL_IMG_PATH='http://localhost:8000/files/socialConfigImages/'
+CONFIG_FILES_PATH="webjs"
+
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 

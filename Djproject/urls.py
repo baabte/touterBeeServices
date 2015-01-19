@@ -57,7 +57,11 @@ urlpatterns = patterns('',
     url(r'^FnLoadCompanySectors/$', 'myapp.views.FnLoadCompanySectors', name='FnLoadCompanySectors'),
     url(r'^FnLoadCountryStateDistrict/$', 'myapp.views.FnLoadCountryStateDistrict', name='FnLoadCountryStateDistrict'),
     url(r'^FnUpdateCompanySignupDetails/$', 'myapp.views.FnUpdateCompanySignupDetails', name='FnUpdateCompanySignupDetails'),
-    url(r'^FnLoadInjectorScript/(?P<companyId>[0-9a-fA-F]{24})/(?P<name>[a-z]{2})/$', 'myapp.views.FnLoadInjectorScript') #to load injected script
-
-    
-)+ static('/files/', document_root=settings.FILEUPLOAD_PATH)
+    url(r'^FnLoadTBeeConfig/$', 'myapp.views.FnLoadTBeeConfig', name='FnLoadTBeeConfig'), #to load injected script
+    url(r'^FnSaveSocialConfigDetails/$', 'myapp.views.FnSaveSocialConfigDetails', name='FnSaveSocialConfigDetails'),
+    url(r'^fnLoadBroadcastTypeTemplate/$', 'myapp.views.fnLoadBroadcastTypeTemplate', name='fnLoadBroadcastTypeTemplate'),
+    url(r'^FnLoadChannels/$', 'myapp.views.FnLoadChannels', name='FnLoadChannels'),
+    url(r'^FnActivateEvent/$', 'myapp.views.FnActivateEvent'), #to load injected script
+    url(r'^facebook/', include('django_facebook.urls')),
+    url(r'^accounts/', include('django_facebook.auth_urls')), #Don't add this line if you use django registration or userena for registration and auth.
+)+ static('/files/', document_root=settings.FILEUPLOAD_PATH) + static('/TBConfigFiles/', document_root=settings.CONFIG_FILES_PATH)
