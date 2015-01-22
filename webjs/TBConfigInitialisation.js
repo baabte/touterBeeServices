@@ -6,7 +6,8 @@
       var mainObj=resultObj[0].tbObj; //copying the resulting object to the variable mainObj
       var elem;
       var elemObj={};
-       for(key in mainObj){ //looping through resulting object
+      
+      for(key in mainObj){ //looping through resulting object
         
         var innerObj=mainObj[key];
           for(key2 in innerObj.pageData){ //loop inside pagedata object to get the specified page control.
@@ -16,17 +17,15 @@
                 var eventType=innerObj.pageData[key2].configDataObj[key3].eventType; //getting the venttype which required to trigger.
                 var elemId=innerObj.pageData[key2].configDataObj[key3].elementId;
                 var ele=document.getElementById(elemId); //getting the target element by its id.
-                // console.log(key3);
-                //elemObj[elemId]=innerObj.pageData[key2].configDataObj; //initialising the value into the elemObj object
-                
-                elemObj[elemId]=innerObj.pageData[key2].configDataObj;
-                
-                 //ele.addEventListener(eventType, obj, false); 
+
+                elemObj[elemId]=innerObj.pageData[key2].configDataObj[key3];
+
                   ele.addEventListener(eventType, function(e){//attaching event listener for target element
                       setTimeout(function(){//timeout function to call the actvateSocialFeature ajax function.
+                     
                       if(!inIframe()){ //checking the website is loaded inside iframe or not
-                         // console.log(elemObj[e.target.id]);
-                         activateSocialFeature(elemObj[e.target.id]); //calling the activateSocialFeature ajax function by passing element object as its parameter.
+                          console.log(elemObj[e.target.id]);
+                          activateSocialFeature(elemObj[e.target.id]); //calling the activateSocialFeature ajax function by passing element object as its parameter.
                           
                         }
 

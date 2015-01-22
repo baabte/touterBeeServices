@@ -898,6 +898,8 @@ def FnSaveSocialConfigDetails(request):
 
         filename=result.get('pic')
         if(default_storage.exists(settings.FILEUPLOAD_PATH+'/socialConfigImages/'+str(filename))):
+            #if os.path.exists(self.path(name)):
+            #    os.remove(self.path(name))
             path = default_storage.save(settings.FILEUPLOAD_PATH+'/socialConfigImages/'+str(filename), file_obj)
             filenameArray=path.split('/')
             actualfilename=filenameArray[len(filenameArray)-1]
@@ -1006,7 +1008,23 @@ def fnLoadBroadcastTypeTemplate(request):
     if request.method == 'POST':      
         stream = StringIO(request.body)
         data = JSONParser().parse(stream)
-        result =  dbconn.system_js.fnGetBroadcastTypeTemplate(data['channelId'],data['broadcastTypeId'])
+        result =  dbconn.system_js.fnGetBroadcastTypeTemplate(data['channelId'],data['broadcastTypeId'],data['urmId'],data['websiteId'],data['currentPage'],data['elementId'])
         return Response(json.dumps(result, default=json_util.default))            
     else:        
-        return Response("failure")  
+        return Response("failure")
+@csrf_exempt
+@api_view(['GET','POST'])
+def fnGetLinkedInAuthorisationCode(request):
+    #connect to our local mongodb
+    db = Connection(settings.MONGO_SERVER_ADDR,settings.MONGO_PORT)
+    #get a connection to our database
+    dbconn = db[settings.MONGO_DB]
+    clnApiAuthorisationDetails = dbconn['clnApiAuthorisationDetails']
+    #return Response({"companyId":companyId,"name":name}) 
+    if request.method == 'GET':      
+        #stream = StringIO(request.body)
+        #data = JSONParser().parse(stream)
+        result =  dbconn.clnApiAuthorisationDetails.insert({'data':request.GET})
+        return Response(json.dumps(request.GET['code'], default=json_util.default))            
+    else:        
+        return Response("failure")    

@@ -64,4 +64,5 @@ urlpatterns = patterns('',
     url(r'^FnActivateEvent/$', 'myapp.views.FnActivateEvent'), #to load injected script
     url(r'^facebook/', include('django_facebook.urls')),
     url(r'^accounts/', include('django_facebook.auth_urls')), #Don't add this line if you use django registration or userena for registration and auth.
+    url(r'^fnGetLinkedInAuthorisationCode/$', 'myapp.views.fnGetLinkedInAuthorisationCode', name='FnLoadChannels')
 )+ static('/files/', document_root=settings.FILEUPLOAD_PATH) + static('/TBConfigFiles/', document_root=settings.CONFIG_FILES_PATH)
