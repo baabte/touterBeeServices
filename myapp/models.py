@@ -19,6 +19,8 @@ import urllib2
 import urlparse
 import subprocess
 import warnings
+import oauth2 as oauth
+import urlparse 
 class SocialFeatures(object):
 	# def fn_facebook_share(self,resultObj):
 	# 	page_token='CAACEdEose0cBAE7zjo5m0fTDONbgLmAB6kMPrMZC1pn3U4TzQD7pQlazUz7yXA9C0BrHKirWOb5ZAbh7XRcViao7ZCvPKJJsRKHxen0jInVw6kvVZBeiAOFfIgLmTi0FiYb2St76c8pV2olM2cIZBohlxpt2y8QEK8yj4NZBFAFKvYz8PRdKeS42kxkBDq9PYXpdRI1p9CqUytRVmPn7BZC'
@@ -60,7 +62,7 @@ class SocialFeatures(object):
 	# 		return 'Something went wrong:', e, e.message
 	# #function to sharing content into facebook temp
 	def fn_facebook_share(self,resultObj):
-		access_token_page='CAACEdEose0cBAOIgBEVt07dxCZBfAqLCaA5nB41fZCEA3aUuIusw07CO1Igr66fRgzEZCLnZCvUmkIS9O2vFuWbdyT4D1zJXGOWrZChHH4YoWcygp6ybtNWSxXfjE0czl1QemzXC2zYFBleXJS69KEHPuniIOUHsNyB60LvXlYAYRsawGybb05zTL9pj3RS4sG4U9eWfVRgYp0a1EqjMg'
+		access_token_page='CAACEdEose0cBAPLSNAMJrDZBCIwuKpBxRcqNF4j4qLZBqvcNMMguzx0CTRayu8c7WY4mjYvU1SJ0X8JYxpoHCIv3xGbZCGaF7gJYrPJJ5oHiPOcMBiq9eq1WZCmyeXYrxXjdMl3F7PldiWvlpIJhJc2ak1HGZBZC8W1rTejTlsZA7CLTsXEUZCksFGot5cd3fP7HytQJnHo3SbwEwtJ05jCCom2LiZAPB340ZD'
 		FACEBOOK_APP_ID =resultObj['appId']
 		FACEBOOK_APP_SECRET = resultObj['secretId']
 		FACEBOOK_PROFILE_ID = resultObj['profileId']
@@ -68,10 +70,10 @@ class SocialFeatures(object):
 		oauth_args = dict(client_id = FACEBOOK_APP_ID,client_secret = FACEBOOK_APP_SECRET,grant_type = 'client_credentials')
 		attach = {
 		"name": 'HEI THIS IS MY TESTING POST',
-		"link": 'http://www.baabte.com',
+		"link": 'http://www.baabtra.com',
 		"caption": 'test post',
 		"description": strip_tags(resultObj['content']),
-		"picture" : 'http://image.slidesharecdn.com/baabtra-140528000621-phpapp01/95/baabtracom-and-massbaabcom-where-are-we-heading-3-638.jpg?cb=1401253759'#SOCIAL_IMG_PATH+str(inputObj['imageName']),
+		"picture" : 'http://baabtra.com/assets/images/logo/baabtralogo.png'#SOCIAL_IMG_PATH+str(inputObj['imageName']),
 		#"page_token" : page_token,
 		}
 
@@ -91,24 +93,48 @@ class SocialFeatures(object):
 		# Instantiate the developer authentication class
 		API_KEY = resultObj['appKey']
 		API_SECRET = resultObj['apiSecretKey']
+
 		RETURN_URL = 'http://localhost:8000/fnGetLinkedInAuthorisationCode?key='+API_KEY
 		#authentication = linkedin.LinkedInDeveloperAuthentication(CONSUMER_KEY, CONSUMER_SECRET,USER_TOKEN, USER_SECRET,RETURN_URL, linkedin.PERMISSIONS.enums.values())
-		#authentication = linkedin.LinkedInAuthentication(API_KEY, API_SECRET, RETURN_URL, linkedin.PERMISSIONS.enums.values())
-		#application = linkedin.LinkedInApplication(authentication)
-		authorisationCodeUrl=['curl','https://www.linkedin.com/uas/oauth2/authorization?response_type=code&client_id='+API_KEY+'&scope=SCOPE&state=STATE&redirect_uri='+RETURN_URL]
-		oauth_response = subprocess.Popen(authorisationCodeUrl,stdout = subprocess.PIPE,stderr = subprocess.PIPE).communicate()[0]
-		#target=urllib2.urlopen(authentication.authorization_url)
-		#authentication.authorization_code =  target.read()#[13:]
 		
-		#authentication.authorization_code ='AQWvmDHbnEKEHAfrjZYyads64QoXe8DxPDgo5WAdSRSusQ4YBrWBpLIBOncAd8r9bw3DqYQ-WxW6fmx2E9R-58eu9z32pwWws9XOLKwbr5N7oK7Yh1CF6lZFtBA3J_HTSWbbNKXEJ-2CHd_avaPMk17W0cbEFWPo-IiPHVYgVf7kF3ZB614'
-		#token=authentication.get_access_token()
-		# application = linkedin.LinkedInApplication(token=token)
+		authentication = linkedin.LinkedInAuthentication(API_KEY, API_SECRET, RETURN_URL, linkedin.PERMISSIONS.enums.values())
+		authentication.authorization_code ='AQRr-hW8AM6Yx8J1GdzaTOTB57fcIg2hvyT49ReH5eeGjSTThrHlFw1n_BAZpPGO-PBKWBFyYwnfYasFzCA4vLiaswelgdY2RPnGa4YCux6dUoVNDj0'
+		authentication.get_access_token()
+		application = linkedin.LinkedInApplication(authentication)
+		#application = linkedin.LinkedInApplication(token='a9640015-7e57-41f0-9155-d5376edf134e')
 		# # Pass it in to the app...
-		# application.submit_share(resultObj['caption'], resultObj['title'], resultObj['content'], resultObj['link'], 'http://d.pr/3OWS')
-		# {'updateKey': u'UNIU-8219502-5705061301949063168-SHARE',
- 	# 	'updateURL': 'http://www.linkedin.com/updates?discuss=&amp;scope=8219502&amp;stype=M&amp;topic=5705061301949063168&amp;type=U&amp;a=aovi'}
-		# Use the app....
+		application.submit_share(resultObj['caption'], resultObj['title'], strip_tags(resultObj['content']), resultObj['link'], 'http://d.pr/3OWS')
+		{'updateKey': u'UNIU-8219502-5705061301949063168-SHARE',
+		'updateURL': 'http://www.linkedin.com/updates?discuss=&amp;scope=8219502&amp;stype=M&amp;topic=5705061301949063168&amp;type=U&amp;a=aovi'}
+		#Use the app....
 
 		#application.get_profile()
-		return authorisationCodeUrl  # open this url on your browser
+		return authentication.authorization_url  # open this url on your browser
+
+	#function to share linked in content
+	# def fn_linkedin_share(self,resultObj):
+	# 	# Define CONSUMER_KEY, CONSUMER_SECRET,  
+	# 	# USER_TOKEN, and USER_SECRET from the credentials 
+	# 	# provided in your LinkedIn application
+
+	# 	# Instantiate the developer authentication class
+	# 	API_KEY = resultObj['appKey']
+	# 	API_SECRET = resultObj['apiSecretKey']
+
+	# 	RETURN_URL = 'http://localhost:8000/fnGetLinkedInAuthorisationCode?key='+API_KEY
+	# 	#authentication = linkedin.LinkedInDeveloperAuthentication(CONSUMER_KEY, CONSUMER_SECRET,USER_TOKEN, USER_SECRET,RETURN_URL, linkedin.PERMISSIONS.enums.values())
+		
+	# 	authentication = linkedin.LinkedInAuthentication(API_KEY, API_SECRET, RETURN_URL, linkedin.PERMISSIONS.enums.values())
+	# 	authentication.authorization_code ='AQRr-hW8AM6Yx8J1GdzaTOTB57fcIg2hvyT49ReH5eeGjSTThrHlFw1n_BAZpPGO-PBKWBFyYwnfYasFzCA4vLiaswelgdY2RPnGa4YCux6dUoVNDj0'
+	# 	authentication.get_access_token()
+	# 	application = linkedin.LinkedInApplication(authentication)
+	# 	#application = linkedin.LinkedInApplication(token='a9640015-7e57-41f0-9155-d5376edf134e')
+	# 	# # Pass it in to the app...
+	# 	application.submit_share(resultObj['caption'], resultObj['title'], strip_tags(resultObj['content']), resultObj['link'], 'http://d.pr/3OWS')
+	# 	{'updateKey': u'UNIU-8219502-5705061301949063168-SHARE',
+	# 	'updateURL': 'http://www.linkedin.com/updates?discuss=&amp;scope=8219502&amp;stype=M&amp;topic=5705061301949063168&amp;type=U&amp;a=aovi'}
+	# 	#Use the app....
+
+	# 	#application.get_profile()
+	# 	return authentication.authorization_url  # open this url on your browser
 		
