@@ -21,6 +21,9 @@ import subprocess
 import warnings
 import oauth2 as oauth
 import urlparse 
+import oauth2 as oauth
+import time
+import simplejson
 class SocialFeatures(object):
 	# def fn_facebook_share(self,resultObj):
 	# 	page_token='CAACEdEose0cBAE7zjo5m0fTDONbgLmAB6kMPrMZC1pn3U4TzQD7pQlazUz7yXA9C0BrHKirWOb5ZAbh7XRcViao7ZCvPKJJsRKHxen0jInVw6kvVZBeiAOFfIgLmTi0FiYb2St76c8pV2olM2cIZBohlxpt2y8QEK8yj4NZBFAFKvYz8PRdKeS42kxkBDq9PYXpdRI1p9CqUytRVmPn7BZC'
@@ -84,57 +87,25 @@ class SocialFeatures(object):
 			return response 
 		except facebook.GraphAPIError as e:
 			return e  		
-	#function to share linked in content
+
 	def fn_linkedin_share(self,resultObj):
-		# Define CONSUMER_KEY, CONSUMER_SECRET,  
-		# USER_TOKEN, and USER_SECRET from the credentials 
-		# provided in your LinkedIn application
-
-		# Instantiate the developer authentication class
-		API_KEY = resultObj['appKey']
-		API_SECRET = resultObj['apiSecretKey']
-
-		RETURN_URL = 'http://localhost:8000/fnGetLinkedInAuthorisationCode?key='+API_KEY
-		#authentication = linkedin.LinkedInDeveloperAuthentication(CONSUMER_KEY, CONSUMER_SECRET,USER_TOKEN, USER_SECRET,RETURN_URL, linkedin.PERMISSIONS.enums.values())
-		
-		authentication = linkedin.LinkedInAuthentication(API_KEY, API_SECRET, RETURN_URL, linkedin.PERMISSIONS.enums.values())
-		authentication.authorization_code ='AQRr-hW8AM6Yx8J1GdzaTOTB57fcIg2hvyT49ReH5eeGjSTThrHlFw1n_BAZpPGO-PBKWBFyYwnfYasFzCA4vLiaswelgdY2RPnGa4YCux6dUoVNDj0'
-		authentication.get_access_token()
-		application = linkedin.LinkedInApplication(authentication)
-		#application = linkedin.LinkedInApplication(token='a9640015-7e57-41f0-9155-d5376edf134e')
-		# # Pass it in to the app...
-		application.submit_share(resultObj['caption'], resultObj['title'], strip_tags(resultObj['content']), resultObj['link'], 'http://d.pr/3OWS')
-		{'updateKey': u'UNIU-8219502-5705061301949063168-SHARE',
-		'updateURL': 'http://www.linkedin.com/updates?discuss=&amp;scope=8219502&amp;stype=M&amp;topic=5705061301949063168&amp;type=U&amp;a=aovi'}
-		#Use the app....
-
-		#application.get_profile()
-		return authentication.authorization_url  # open this url on your browser
-
-	#function to share linked in content
-	# def fn_linkedin_share(self,resultObj):
-	# 	# Define CONSUMER_KEY, CONSUMER_SECRET,  
-	# 	# USER_TOKEN, and USER_SECRET from the credentials 
-	# 	# provided in your LinkedIn application
-
-	# 	# Instantiate the developer authentication class
-	# 	API_KEY = resultObj['appKey']
-	# 	API_SECRET = resultObj['apiSecretKey']
-
-	# 	RETURN_URL = 'http://localhost:8000/fnGetLinkedInAuthorisationCode?key='+API_KEY
-	# 	#authentication = linkedin.LinkedInDeveloperAuthentication(CONSUMER_KEY, CONSUMER_SECRET,USER_TOKEN, USER_SECRET,RETURN_URL, linkedin.PERMISSIONS.enums.values())
-		
-	# 	authentication = linkedin.LinkedInAuthentication(API_KEY, API_SECRET, RETURN_URL, linkedin.PERMISSIONS.enums.values())
-	# 	authentication.authorization_code ='AQRr-hW8AM6Yx8J1GdzaTOTB57fcIg2hvyT49ReH5eeGjSTThrHlFw1n_BAZpPGO-PBKWBFyYwnfYasFzCA4vLiaswelgdY2RPnGa4YCux6dUoVNDj0'
-	# 	authentication.get_access_token()
-	# 	application = linkedin.LinkedInApplication(authentication)
-	# 	#application = linkedin.LinkedInApplication(token='a9640015-7e57-41f0-9155-d5376edf134e')
-	# 	# # Pass it in to the app...
-	# 	application.submit_share(resultObj['caption'], resultObj['title'], strip_tags(resultObj['content']), resultObj['link'], 'http://d.pr/3OWS')
-	# 	{'updateKey': u'UNIU-8219502-5705061301949063168-SHARE',
-	# 	'updateURL': 'http://www.linkedin.com/updates?discuss=&amp;scope=8219502&amp;stype=M&amp;topic=5705061301949063168&amp;type=U&amp;a=aovi'}
-	# 	#Use the app....
-
-	# 	#application.get_profile()
-	# 	return authentication.authorization_url  # open this url on your browser
+		url = "http://api.linkedin.com/v1/people/~/shares"
+	 
+		consumer = oauth.Consumer(key=resultObj['appKey'],secret=resultObj['apiSecretKey'])
+		        
+		token = oauth.Token(key="f4062f5d-1955-494c-a6a8-9f594eaf18db",secret="52ed6665-8709-46d7-a272-d12a5c00c56d")
+		 
+		client = oauth.Client(consumer, token)
+		body = {"comment":strip_tags(resultObj['content']),
+		"content":{
+		"title":resultObj['title'],
+		"submitted_url":"www.baabtra.com",
+		"submitted_image_url":'http://baabtra.com/assets/images/logo/baabtralogo.png'
+		},
+		"visibility":{"code":"anyone"}
+		}
+		           
+		 
+		resp, content = client.request(url, 'POST', body=simplejson.dumps(body), headers={'Content-Type':'application/json'})
+		return resp,content
 		
