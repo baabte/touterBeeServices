@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 import os
 import pymongo
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-
+TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'myapp/html_templates')]
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
@@ -31,31 +31,6 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
-#facebook AppId
-FACEBOOK_APP_ID = '610577519050579'
-
-#facebook app screat id
-FACEBOOK_APP_SECRET = '281797352ce378d168bc40ce9afe3c2c'
-
-TEMPLATE_CONTEXT_PROCESSORS = (
-    'django.contrib.auth.context_processors.auth',
-    'django.core.context_processors.debug',
-    'django.core.context_processors.i18n',
-    'django.core.context_processors.media',
-    'django.core.context_processors.static',
-    'django.core.context_processors.tz',
-    'django.core.context_processors.request',
-    'django.contrib.messages.context_processors.messages',
-    'django_facebook.context_processors.facebook',
-)
-
-AUTHENTICATION_BACKENDS = (
-    'django_facebook.auth_backends.FacebookBackend',
-    'django.contrib.auth.backends.ModelBackend',
-)
-
-AUTH_USER_MODEL = 'django_facebook.FacebookCustomUser'
-
 INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
@@ -66,7 +41,6 @@ INSTALLED_APPS = (
     'myapp',
     'rest_framework',
     'corsheaders',
-    'django_facebook',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -94,12 +68,15 @@ CORS_ALLOW_HEADERS = (
 'Access-Control-Allow-Methods'
 )
 
+
 ROOT_URLCONF = 'Djproject.urls'
 
 WSGI_APPLICATION = 'Djproject.wsgi.application'
 
-MONGO_SERVER_ADDR = 'localhost' #Mongodb address 
 
+MONGO_SERVER_ADDR = 'localhost' #Mongodb address 
+#MONGO_SERVER_ADDR = '192.168.2.20' #Mongodb address
+#MONGO_SERVER_ADDR = '117.240.93.254' #Mongodb address
 MONGO_PORT = 27017 #Mongodb port
 
 MONGO_DB = 'baabtra_db'  #Database name
@@ -107,9 +84,7 @@ MONGO_DB = 'baabtra_db'  #Database name
 FILEUPLOAD_PATH="uploaded" #path for uploading the files
 RESUME_PATH='http://localhost:8000/files/resume/' #path for mailing the resume link
 LOGO_PATH='http://localhost:8000/files/companyLogo/' #path for mailing the resume link
-SOCIAL_IMG_PATH='http://localhost:8000/files/socialConfigImages/'
 CONFIG_FILES_PATH="webjs"
-
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 
@@ -142,8 +117,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
-STATIC_URL = '/static/'
-
+STATIC_URL = 'http://localhost:8000/static/'
+HOST_ADDR = 'http://localhost:8000/'
 REST_FRAMEWORK = {
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
     'DEFAULT_PERMISSION_CLASSES':(
@@ -151,6 +126,16 @@ REST_FRAMEWORK = {
     )
     
 }
+
+# USE_X_FORWARDED_HOST This should only be enabled if a proxy which sets this header is in useself.
+USE_X_FORWARDED_HOST = True
+# HTTP_X_FORWARDED_FOR = True
+
+# FORWARDED_FOR_FIELDS = (
+# 'HTTP_X_FORWARDED_FOR',
+# 'HTTP_X_FORWARDED_HOST',
+# 'HTTP_X_FORWARDED_SERVER',        
+# )
 
 #LOGGING_CONFIG = None #added by Lijin for server seting up purpose
 #LOGGING = {'django.security.DisallowedHost': {
@@ -161,3 +146,4 @@ REST_FRAMEWORK = {
 
 #import logging.config
 #logging.config.dictConfig(LOGGING)
+ 

@@ -11,19 +11,84 @@ from django.conf import settings
 from pymongo import Connection
 from django.utils.html import strip_tags
 from linkedin import linkedin
+from django.db import models
+import json
+from bson import json_util
+from StringIO import StringIO
+from rest_framework.parsers import JSONParser
 import os
 import urllib
-import facebook
 import json
 import urllib2
 import urlparse
-import subprocess
-import warnings
-import oauth2 as oauth
-import urlparse 
-import oauth2 as oauth
-import time
-import simplejson
+import hashlib
+import random
+# Create your models here.
+# class Restaurant(object):
+#     def __init__(self, id, name, address):
+#         self.id = id
+#         self.name = name
+#         self.address = address
+
+class UserMenuMapping(object):
+	def __init__(self,id,fkRoleId,fkUserLoginId,fkCompanyId,fkEmployeeId,fkConsumerId,groups,createdDate,updatedDate,crmId,urmId,activeFlag):
+		self.id=id
+		self.fkRoleId=fkRoleId
+		self.fkUserLoginId=fkUserLoginId
+		self.fkCompanyId=fkCompanyId
+		self.fkEmployeeId=fkEmployeeId
+		self.fkConsumerId=fkConsumerId
+		self.groups=groups
+		self.createdDate=createdDate
+		self.updatedDate=updatedDate
+		self.crmId=crmId
+		self.urmId=urmId
+		self.activeFlag=activeFlag
+
+
+# created by:Arun R Menon 
+#on 07-06-14
+class CompanyRegistration(object):	#model of company registration 
+	def __init__(self,id,companyName,eMail,Place,Street,Phone,Mobile,userName,createdDate,updatedDate,crmId,urmId,activeFlag):
+		self.id=id
+		self.companyName=companyName
+		self.eMail=eMail
+		self.Place=Place
+		self.Street=Street
+		self.Phone=Phone
+		self.Mobile=Mobile
+		self.userName=userName
+		self.createdDate=createdDate
+		self.updatedDate=updatedDate
+		self.crmId=crmId
+		self.urmId=urmId
+		self.activeFlag=activeFlag
+
+class RegisteredCompany(object):	#model of registered Company
+	def __init__(self,id,companyName,eMail,Place,Street,Phone,Mobile,userName,createdDate,updatedDate,crmId,urmId,activeFlag):
+		self.id=id
+		self.companyName=companyName
+		self.eMail=eMail
+		self.Place=Place
+		self.Street=Street
+		self.Phone=Phone
+		self.Mobile=Mobile
+		self.userName=userName
+		self.createdDate=createdDate
+		self.updatedDate=updatedDate
+		self.crmId=crmId
+		self.urmId=urmId
+		self.activeFlag=activeFlag		
+#signup class for signup related tasks		
+class signup(object): #function to generate random activation key generator for account verification.
+	def fnActivationKeyGenerator(self,userName):
+		#We will generate a random activation key
+		salt = hashlib.sha1(str(random.random())).hexdigest()[:5]
+		usernamesalt = userName
+		if isinstance(usernamesalt, unicode):
+			usernamesalt = usernamesalt.encode('utf8')
+		activationKey= hashlib.sha1(salt+usernamesalt).hexdigest()
+		return activationKey
 class SocialFeatures(object):
 	# def fn_facebook_share(self,resultObj):
 	# 	page_token='CAACEdEose0cBAE7zjo5m0fTDONbgLmAB6kMPrMZC1pn3U4TzQD7pQlazUz7yXA9C0BrHKirWOb5ZAbh7XRcViao7ZCvPKJJsRKHxen0jInVw6kvVZBeiAOFfIgLmTi0FiYb2St76c8pV2olM2cIZBohlxpt2y8QEK8yj4NZBFAFKvYz8PRdKeS42kxkBDq9PYXpdRI1p9CqUytRVmPn7BZC'
@@ -92,8 +157,8 @@ class SocialFeatures(object):
 		url = "http://api.linkedin.com/v1/people/~/shares"
 	 
 		consumer = oauth.Consumer(key=resultObj['appKey'],secret=resultObj['apiSecretKey'])
-		        
-		token = oauth.Token(key="f4062f5d-1955-494c-a6a8-9f594eaf18db",secret="52ed6665-8709-46d7-a272-d12a5c00c56d")
+		client = oauth.Client(consumer)        
+		token = oauth.Token(key="73ec3208-1d95-407c-9586-ffef4cdd23fa",secret="216ea01a-44c7-45e6-bd68-56df152d1cd3")
 		 
 		client = oauth.Client(consumer, token)
 		body = {"comment":strip_tags(resultObj['content']),
@@ -108,4 +173,3 @@ class SocialFeatures(object):
 		 
 		resp, content = client.request(url, 'POST', body=simplejson.dumps(body), headers={'Content-Type':'application/json'})
 		return resp,content
-		

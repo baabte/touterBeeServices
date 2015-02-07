@@ -7,14 +7,8 @@
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.parsers import FormParser
-from rest_framework.parsers import MultiPartParser
-from rest_framework.parsers import FileUploadParser
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
-from django.conf import settings
 from pymongo import Connection
-from models import SocialFeatures #importing the socialfetaure model class
+#from models import UserMenuMapping
 from serializers import MongoAwareEncoder
 from datetime import datetime
 import json
@@ -26,10 +20,28 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 from django.conf import settings
 from django.core.mail import EmailMessage
+from django.http import HttpResponse
+from django.template import Context
+from django.template.loader import render_to_string, get_template
 
 @csrf_exempt  
 @api_view(['GET','POST'])
-def InsertUserMenu(request):                                   #for Inserting menu items for specific user
+def InsertUserMenu(request):
+    def test(menu,sub):
+        if sub == None:
+            sub=0
+        if sub<len(menu):
+            if 'fkMenuId' in menu[sub]:
+                menu[sub]['fkMenuId']=ObjectId(menu[sub]['fkMenuId'])
+                pass
+            if 'childMenuStructure' in menu[sub]:    
+                if len(menu[sub]['childMenuStructure'])>0:
+                    test(menu[sub]['childMenuStructure'],None)
+                    pass
+                pass
+            sub=sub+1
+            test(menu,sub)
+            pass                                   #for Inserting menu items for specific user
     #connect to our local mongodb
     db = Connection(settings.MONGO_SERVER_ADDR,settings.MONGO_PORT)
     #get a connection to our database
@@ -46,16 +58,11 @@ def InsertUserMenu(request):                                   #for Inserting me
         stream = StringIO(request.body)
         data = JSONParser().parse(stream)
         #data["fkMenuId"]=ObjectId(data["fkMenuId"])
-        for menu in data["menus"]:
-           menu['fkMenuId']=ObjectId(menu['fkMenuId'])
-           for sub_menu in menu['childMenuStructure']:
-               sub_menu['fkMenuId']=ObjectId(sub_menu['fkMenuId'])
-               pass
-           pass
+        test(data["menus"],None)
         try:
             docs_list  = dbconn.system_js.fnSaveUserMenus(ObjectId(data['fkUrmId']),ObjectId(data["fkUserRoleMappingId"]),ObjectId(data["fkMenuRegionId"]),data["menus"]) 
         except:
-            return Response(json.dumps("", default=json_util.default))
+            return Response(request.body)
         return Response(StringIO(docs_list))
 
 @csrf_exempt  
@@ -233,20 +240,34 @@ def FnGetCompanyDetailsJiView(request):#for get company details
 @csrf_exempt  
 @api_view(['GET','POST'])
 def SaveNewRoleMenu(request): #for Insert or update menu items for specific user and role
+    def test(menu,sub):
+        if sub == None:
+            sub=0
+        if sub<len(menu):
+            if 'fkMenuId' in menu[sub]:
+                menu[sub]['fkMenuId']=ObjectId(menu[sub]['fkMenuId'])
+                del menu[sub]['actionMaster']
+                if 'actionStatus' in menu[sub]:
+                    del menu[sub]['actionStatus']
+                    pass
+                pass
+            if 'childMenuStructure' in menu[sub]:    
+                if len(menu[sub]['childMenuStructure'])>0:
+                    test(menu[sub]['childMenuStructure'],None)
+                    pass
+                pass
+            sub=sub+1
+            test(menu,sub)
+            pass
     db = Connection(settings.MONGO_SERVER_ADDR,settings.MONGO_PORT)
     dbconn = db[settings.MONGO_DB]
     if request.method == 'POST':
         stream = StringIO(request.body)#reads the data passed along with the request
         data = JSONParser().parse(stream)#converts to json
         response=""
-        for menu in data["menus"]:
-            menu['fkMenuId']=ObjectId(menu['fkMenuId'])
-            for sub_menu in menu['childMenuStructure']:
-                sub_menu['fkMenuId']=ObjectId(sub_menu['fkMenuId'])
-                for sub_menu_sub in sub_menu['childMenuStructure']:
-                    response="Not Allowed"
-                    pass
-                pass
+        
+        test(data["menus"],None)
+
         if response=="":
             try:            
                 response=dbconn.system_js.fnSaveUserMenuMapping(data['rm_id'],data['role_id'],data['menus']); 
@@ -410,26 +431,36 @@ def CountryStateDistrictView(request):
     else:    
         return Response("failure")
 
-#created by Suhail Pallimalil
-#on 13-10-14
-@csrf_exempt  
-@api_view(['GET','POST'])
-def Login(request):
-    #connect to our local mongodb
-        db = Connection(settings.MONGO_SERVER_ADDR,settings.MONGO_PORT)
-        #get a connection to our database
-        dbconn = db[settings.MONGO_DB]
-        userLoginCollection = dbconn['clnUserLogin']
-        if request.method == 'POST':
-            stream =StringIO(request.body)
-            data = JSONParser().parse(stream)            
-            try:
-                log = dbconn.system_js.fnLogin(data);
-            except:
-                return Response("error")
-            return Response(json.dumps(log, default=json_util.default))
-        else:    
-            return Response("failure")    
+# #created by midhun sudhakar
+# #on 13-10-14
+# @csrf_exempt  
+# @api_view(['GET','POST'])
+# def Login(request):
+#     #connect to our local mongodb
+#         db = Connection(settings.MONGO_SERVER_ADDR,settings.MONGO_PORT)
+#         #get a connection to our database
+#         dbconn = db[settings.MONGO_DB]
+#         if request.method == 'POST':
+#             stream =StringIO(request.body)
+#             data = JSONParser().parse(stream) 
+#             LoginData=data["loginData"]
+#             try:
+                
+#                 x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+#                 if x_forwarded_for:
+#                     real_ip = x_forwarded_for.split(',')[0]
+#                 else:
+#                     real_ip = request.META.get('REMOTE_ADDR')
+#                 LoginData['ip']=real_ip
+#                 log = dbconn.system_js.fnLogin(LoginData);
+#             except Exception as e:
+#                 return Response(str(e))
+#             return Response(json.dumps(log, default=json_util.default))
+#         else:    
+#             return Response("failure")
+           
+
+
 #created by MIDHUN SUDHAKAR
 #on 10-10-14
 @csrf_exempt  
@@ -464,9 +495,9 @@ def ManageRolesOfCompanyView(request):  #this service will retrieve all roles of
     if request.method == 'POST':
         stream = StringIO(request.body)
         data = JSONParser().parse(stream)
-        cmpid=data["companyId"]
+        userdata=data["userdata"]
         try:
-            rolls=dbconn.system_js.function_retriveCompany_Roles(cmpid)    
+            rolls=dbconn.system_js.function_retriveCompany_Roles(userdata)    
         except:
             return Response(json.dumps("error", default=json_util.default))
         # return Response(json.dumps(rolls, default=json_util.default))
@@ -742,47 +773,11 @@ def SearchCompanyView(request):
     else:        
         return Response("failure")   
 
-#service for checking user name already registered  or not
-#Author: Akshath kumar M.     
+#created by Arun.R.Menon
+#on 13-10-14
 @csrf_exempt
 @api_view(['GET','POST'])
-def FnCheckEmailExists(request):
-    #connect to our local mongodb
-    db = Connection(settings.MONGO_SERVER_ADDR,settings.MONGO_PORT)
-    #get a connection to our database
-    dbconn = db[settings.MONGO_DB]
-
-    if request.method == 'POST':      
-        stream = StringIO(request.body)
-        data = JSONParser().parse(stream)
-        result = dbconn.system_js.fnUserNameValid(data);
-        return Response(json.dumps(result, default=json_util.default))            
-    else:        
-        return Response("failure")
-
-#service for ckecking  company name already exists or not
-#Author: Akshath kumar M.
-@csrf_exempt
-@api_view(['GET','POST'])    
-def FnCheckCompanyNameExists(request):
-    #connect to our local mongodb
-    db = Connection(settings.MONGO_SERVER_ADDR,settings.MONGO_PORT)
-    #get a connection to our database
-    dbconn = db[settings.MONGO_DB]
-   
-    if request.method == 'POST':      
-        stream = StringIO(request.body)
-        data = JSONParser().parse(stream)
-        result = dbconn.system_js.fnCheckCompanyNameValid(data);
-        return Response(json.dumps(result, default=json_util.default))            
-    else:        
-        return Response("failure")
-
-#service for inserting compan signup details
-#Author: Akshath kumar M.        
-@csrf_exempt
-@api_view(['GET','POST'])
-def FnCompanySignup(request):
+def GetUserPlanView(request):
     #connect to our local mongodb
     db = Connection(settings.MONGO_SERVER_ADDR,settings.MONGO_PORT)
     #get a connection to our database
@@ -791,240 +786,434 @@ def FnCompanySignup(request):
     if request.method == 'POST':      
         stream = StringIO(request.body)
         data = JSONParser().parse(stream)
-        result = dbconn.system_js.fnCompanySignup(data['companyName'],data['userName'],data['password'])
-        email= data['userName']
-        email = EmailMessage('Company Registered','Welcome to SocialBee, Now you can login to your account using your credentials', to=[email])
-        email.send()
+        result = dbconn.system_js.fnGetUserPlan(data);
         return Response(json.dumps(result, default=json_util.default))            
     else:        
-        return Response("failure")
-
-#created by Akshath kumar M
-#Service for loading company sectors
-@csrf_exempt
-@api_view(['GET','POST'])
-def FnLoadCompanySectors(request):
-    #connect to our local mongodb
-    db = Connection(settings.MONGO_SERVER_ADDR,settings.MONGO_PORT)
-    #get a connection to our database
-    dbconn = db[settings.MONGO_DB]
-    sectorCollection = dbconn['clnSectors']
-
-    if request.method == 'POST':
-        #get our collection
-        docs_list  = list(sectorCollection.find())
-        return Response(json.dumps(docs_list, default=json_util.default))
-    else:    
-        return Response("failure")
+        return Response("failure")   
 
 #created by Arun.R.Menon
 #on 13-10-14
 @csrf_exempt
 @api_view(['GET','POST'])
-def FnLoadCountryStateDistrict(request):
+def GetPlansView(request):
     #connect to our local mongodb
     db = Connection(settings.MONGO_SERVER_ADDR,settings.MONGO_PORT)
     #get a connection to our database
     dbconn = db[settings.MONGO_DB]
-    CountryStateDistrictCollection = dbconn['clnCountryStateDistrict']
-
-    if request.method == 'POST':
-        #get our collection
-        
-        docs_list  = list(CountryStateDistrictCollection.find())
-        return Response(json.dumps(docs_list, default=json_util.default))
-    else:    
-        return Response("failure")
-
-##created by Akshath kumar M.
-#Description: Service fuction for updating company signup details.
-@csrf_exempt
-@api_view(['GET','POST'])
-def FnUpdateCompanySignupDetails(request):
-    #connect to our local mongodb
-    db = Connection(settings.MONGO_SERVER_ADDR,settings.MONGO_PORT)
-    #get a connection to our database
-    dbconn = db[settings.MONGO_DB]
-    #companyCollection = dbconn['clnCompany']
-
-    if request.method == 'POST':
-        stream = StringIO(request.body)
-        data = JSONParser().parse(stream)
-        try:
-            companyList=dbconn.system_js.FnUpdateCompanySignupDetails(data["companyId"],data['urmId'],data['data'])
-        except:
-            return Response(data)
-        return Response(json.dumps(companyList, default=json_util.default))
+    
+    if request.method == 'POST':      
+        result = dbconn.system_js.fnGetPlans();
+        return Response(json.dumps(result, default=json_util.default))            
     else:        
-        return Response("failure")
+        return Response("failure")   
 
-#Author      : Akshath kumar M.
-#Description : To load the script injector for touter bee. 
+
+#created by Arun.R.Menon
+#on 13-10-14
 @csrf_exempt
 @api_view(['GET','POST'])
-def FnLoadTBeeConfig(request):
+def GetFeaturesView(request):
     #connect to our local mongodb
     db = Connection(settings.MONGO_SERVER_ADDR,settings.MONGO_PORT)
     #get a connection to our database
     dbconn = db[settings.MONGO_DB]
-    clnSocialConfigDetails = dbconn['clnSocialConfigDetails']
-    #return Response({"companyId":companyId,"name":name}) 
+    
     if request.method == 'POST':      
         stream = StringIO(request.body)
         data = JSONParser().parse(stream)
-        result = list(clnSocialConfigDetails.find({'fkUserId':str(data['urmId']),'fkWebsiteId':str(data['websiteId'])}));
+        result = dbconn.system_js.fnGetFeatures(data);
         return Response(json.dumps(result, default=json_util.default))            
     else:        
-        return Response("failure")      
+        return Response("failure")   
 
-#Author      : Akshath kumar M.
-#Description : To load the script injector for touter bee. 
+#created by Arun.R.Menon
+#on 13-10-14
 @csrf_exempt
 @api_view(['GET','POST'])
-def FnSaveSocialConfigDetails(request):
+def ChangeUserPlanView(request):
     #connect to our local mongodb
     db = Connection(settings.MONGO_SERVER_ADDR,settings.MONGO_PORT)
     #get a connection to our database
     dbconn = db[settings.MONGO_DB]
-    #clnSocialConfigDetails = dbconn['clnSocialConfigDetails']
+    
     if request.method == 'POST':      
-        data =request.POST
-
-        #data = JSONParser().parse(stream)
-        #if(request.FILES.length>0):
-        file_obj = request.FILES['file']#['candidate']
-        extension = file_obj.content_type.split('/')[0]
-        result = dbconn.system_js.FnSaveSocialConfigDetails(data);
-
-        filename=result.get('pic')
-        if(default_storage.exists(settings.FILEUPLOAD_PATH+'/socialConfigImages/'+str(filename))):
-            #if os.path.exists(self.path(name)):
-            #    os.remove(self.path(name))
-            path = default_storage.save(settings.FILEUPLOAD_PATH+'/socialConfigImages/'+str(filename), file_obj)
-            filenameArray=path.split('/')
-            actualfilename=filenameArray[len(filenameArray)-1]
-        else:
-            default_storage.delete(settings.FILEUPLOAD_PATH+'/socialConfigImages/'+str(filename))
-            path = default_storage.save(settings.FILEUPLOAD_PATH+'/socialConfigImages/'+str(filename), file_obj)
-            filenameArray=path.split('/')
-            actualfilename=filenameArray[len(filenameArray)-1]
-            filename = str(filename) + str(file_obj)
-            if not os.path.exists(settings.FILEUPLOAD_PATH+'/socialConfigImages/'+str(filename)): #checking if for the directory already exists or not
-                os.makedirs(settings.FILEUPLOAD_PATH+'/socialConfigImages/'+str(filename))
-        
-        return Response(json.dumps(result, default=json_util.default))            
-    else:        
-        return Response("failure")      
-#Author      : Akshath kumar M.
-#Description : To activate thesocial feature at the time selected element event
-@csrf_exempt
-@api_view(['GET','POST'])
-def FnActivateEvent(request):
-    #connect to our local mongodb
-    db = Connection(settings.MONGO_SERVER_ADDR,settings.MONGO_PORT)
-    #get a connection to our database
-    dbconn = db[settings.MONGO_DB]
-    #UserLoginCollection = dbconn['clnUserLogin']
-   
-    if request.method == 'POST':
         stream = StringIO(request.body)
         data = JSONParser().parse(stream)
-        inputObj=data['inputObj'] #input object for posting 
-               
-        try:
-            nameOfFn=getattr(SocialFeatures,inputObj['featureFunction']) #converting the string to dynamic function
-            result=nameOfFn(SocialFeatures(),inputObj) #calling the dynamic function
-            return Response(result)  
-        except ValueError:
-            return Response(ValueError)  
-#Author      : Akshath kumar M.
-#Description : To activate thesocial feature at the time selected element event
+        dbconn.system_js.fnChangeUserPlan(data);
+        return Response("success")            
+    else:        
+        return Response("failure")   
+
+#created by Arun.R.Menon
+#on 13-10-14
+@csrf_exempt
+@api_view(['GET','POST'])
+def EditPricingView(request):
+    #connect to our local mongodb
+    db = Connection(settings.MONGO_SERVER_ADDR,settings.MONGO_PORT)
+    #get a connection to our database
+    dbconn = db[settings.MONGO_DB]
+    
+    if request.method == 'POST':      
+        stream = StringIO(request.body)
+        data = JSONParser().parse(stream)
+        dbconn.system_js.fnEditPricing(data);
+        return Response("success")            
+    else:        
+        return Response("failure")                                            
+
+
+#created by Arun.R.Menon
+#on 13-10-14
+@csrf_exempt
+@api_view(['GET','POST'])
+def AddFeatureView(request):
+    #connect to our local mongodb
+    db = Connection(settings.MONGO_SERVER_ADDR,settings.MONGO_PORT)
+    #get a connection to our database
+    dbconn = db[settings.MONGO_DB]
+    
+    if request.method == 'POST':      
+        stream = StringIO(request.body)
+        data = JSONParser().parse(stream)
+        result =dbconn.system_js.fnAddFeature(data);
+        # return Response(json.dumps(result, default=json_util.default))  
+        return Response("success")            
+    else:        
+        return Response("failure")   
+
+
+#created by Arun.R.Menon
+#on 13-10-14
+@csrf_exempt
+@api_view(['GET','POST'])
+def DeleteFeatureView(request):
+    #connect to our local mongodb
+    db = Connection(settings.MONGO_SERVER_ADDR,settings.MONGO_PORT)
+    #get a connection to our database
+    dbconn = db[settings.MONGO_DB]
+    
+    if request.method == 'POST':      
+        stream = StringIO(request.body)
+        data = JSONParser().parse(stream)
+        result =dbconn.system_js.fnDeleteFeature(data);
+        # return Response(json.dumps(result, default=json_util.default))  
+        return Response("success")            
+    else:        
+        return Response("failure")            
+
+        
+
+#created by Arun.R.Menon
+#on 13-10-14
+@csrf_exempt
+@api_view(['GET','POST'])
+def EditBillingView(request):
+    #connect to our local mongodb
+    db = Connection(settings.MONGO_SERVER_ADDR,settings.MONGO_PORT)
+    #get a connection to our database
+    dbconn = db[settings.MONGO_DB]
+    
+    if request.method == 'POST':      
+        stream = StringIO(request.body)
+        data = JSONParser().parse(stream)
+        result =dbconn.system_js.fnEditBilling(data);
+        # return Response(json.dumps(result, default=json_util.default))  
+        return Response("success")            
+    else:        
+        return Response("failure")  
+
+
+#created by Arun.R.Menon
+#on 13-10-14
+@csrf_exempt
+@api_view(['GET','POST'])
+def GetFeaturesConfigView(request):
+    #connect to our local mongodb
+    db = Connection(settings.MONGO_SERVER_ADDR,settings.MONGO_PORT)
+    #get a connection to our database
+    dbconn = db[settings.MONGO_DB]
+    
+    if request.method == 'POST':      
+        stream = StringIO(request.body)
+        data = JSONParser().parse(stream)
+        result =dbconn.system_js.fnGetFeaturesConfig(data);
+        return Response(json.dumps(result, default=json_util.default))  
+        # return Response("success")            
+    else:        
+        return Response("failure")          
+
+# #created by midhun sudhakar
+# #on 13-10-14
 # @csrf_exempt
 # @api_view(['GET','POST'])
-# def fnfacebookshare(request):
+# def loadlogUserdata(request):
 #     #connect to our local mongodb
 #     db = Connection(settings.MONGO_SERVER_ADDR,settings.MONGO_PORT)
 #     #get a connection to our database
 #     dbconn = db[settings.MONGO_DB]
-#     #UserLoginCollection = dbconn['clnUserLogin']
-   
-#     if request.method == 'POST':
+    
+#     if request.method == 'POST':      
 #         stream = StringIO(request.body)
 #         data = JSONParser().parse(stream)
-#         inputObj=data['inputObj'] #input object for posting 
-#         page_token='CAACEdEose0cBAE7zjo5m0fTDONbgLmAB6kMPrMZC1pn3U4TzQD7pQlazUz7yXA9C0BrHKirWOb5ZAbh7XRcViao7ZCvPKJJsRKHxen0jInVw6kvVZBeiAOFfIgLmTi0FiYb2St76c8pV2olM2cIZBohlxpt2y8QEK8yj4NZBFAFKvYz8PRdKeS42kxkBDq9PYXpdRI1p9CqUytRVmPn7BZC'
-#         access_token_page='CAACEdEose0cBAKXIpivWvKqfnfRKK0HsRIAfBIeD9yMTAolkvd5zq5QCJpYPjg0megyNfcPDFYjUgCAnCmJ8ZBZBXcyIMd25FepNGvlOUJOiZBghTgfl6xNbsk7Ipa7s0vZBCTWa3ZBes1T7A95CSKdswL1LGI5IAXfhcbD3nY2ZBEQD4S4PU1sBdDEvdi9tZBNiXLn2m1bDZCHY0VqxpLgS'
-#         FACEBOOK_APP_ID = '610577519050579'
-#         FACEBOOK_APP_SECRET = '281797352ce378d168bc40ce9afe3c2c'
-#         FACEBOOK_PROFILE_ID = '100006914924908'
-
-#         oauth_args = dict(client_id = FACEBOOK_APP_ID,client_secret = FACEBOOK_APP_SECRET,grant_type = 'client_credentials')
-
-#         oauth_response = urllib.urlopen('https://graph.facebook.com/oauth/access_token?' + urllib.urlencode(oauth_args)).read()       
-
-#         attach = {
-#         "name": 'Hello world',
-#         "link": 'www.baabte.com',
-#         "caption": 'test post',
-#         "description": strip_tags(inputObj['content']),
-#         "picture" : 'http://image.slidesharecdn.com/baabtra-140528000621-phpapp01/95/baabtracom-and-massbaabcom-where-are-we-heading-3-638.jpg?cb=1401253759'#SOCIAL_IMG_PATH+str(inputObj['imageName']),
-#         #"page_token" : page_token,
-#         }
-
-#         facebook_graph = facebook.GraphAPI(access_token_page)
-#         #facebook_graph.get_object("me")
+#         UserDataObjId=data["UserDataObjId"]
 #         try:
-#             response = facebook_graph.put_wall_post('', attachment=attach) #,profile_id = FACEBOOK_PROFILE_ID
-#             return Response(response)  
-#         except facebook.GraphAPIError as e:
-#             return Response(e)  
+#            result=dbconn.system_js.fun_load_log_user_data(UserDataObjId)    
+#         except:
+#            return Response(json.dumps("error", default=json_util.default))
+#         return Response(json.dumps(result, default=json_util.default))
+#     else:        
+#         return Response(json.dumps("failed", default=json_util.default))
 
+# @csrf_exempt
+# @api_view(['GET','POST'])
+# def logout(request):
+#     #connect to our local mongodb
+#     db = Connection(settings.MONGO_SERVER_ADDR,settings.MONGO_PORT)
+#     #get a connection to our database
+#     dbconn = db[settings.MONGO_DB]
+    
+#     if request.method == 'POST':      
+#         stream = StringIO(request.body)
+#         data = JSONParser().parse(stream)
+#         UserLogoutObjId=data["UserLogoutObjId"]
+#         try:
+#            result=dbconn.system_js.fun_logout(UserLogoutObjId)    
+#         except:
+#            return Response(json.dumps("error", default=json_util.default))
+#         return Response(json.dumps("success", default=json_util.default))
+#     else:        
+#         return Response(json.dumps("failed", default=json_util.default))
+         
+
+
+
+#created by Arun.R.Menon
+#on 13-10-14
 @csrf_exempt
 @api_view(['GET','POST'])
-def FnLoadChannels(request):
+def SaveFeaturesConfigView(request):
     #connect to our local mongodb
     db = Connection(settings.MONGO_SERVER_ADDR,settings.MONGO_PORT)
     #get a connection to our database
     dbconn = db[settings.MONGO_DB]
-    clnSocialConfigDetails = dbconn['clnChannels']
-    #return Response({"companyId":companyId,"name":name}) 
+    
     if request.method == 'POST':      
         stream = StringIO(request.body)
         data = JSONParser().parse(stream)
-        result = list(clnSocialConfigDetails.find());
-        return Response(json.dumps(result, default=json_util.default))            
+        result =dbconn.system_js.fnSaveFeaturesConfig(data);
+        return Response(json.dumps(result, default=json_util.default))  
+        # return Response("success")            
     else:        
-        return Response("failure")      
+        return Response("failure")        
+
         
+
+#created by Arun.R.Menon
+#on 13-10-14
 @csrf_exempt
 @api_view(['GET','POST'])
-def fnLoadBroadcastTypeTemplate(request):
+def GetFeaturesConfigValues(request):
     #connect to our local mongodb
     db = Connection(settings.MONGO_SERVER_ADDR,settings.MONGO_PORT)
     #get a connection to our database
     dbconn = db[settings.MONGO_DB]
-    clnSocialConfigDetails = dbconn['clnChannels']
-    #return Response({"companyId":companyId,"name":name}) 
+    
     if request.method == 'POST':      
         stream = StringIO(request.body)
         data = JSONParser().parse(stream)
-        result =  dbconn.system_js.fnGetBroadcastTypeTemplate(data['channelId'],data['broadcastTypeId'],data['urmId'],data['websiteId'],data['currentPage'],data['elementId'])
-        return Response(json.dumps(result, default=json_util.default))            
+        result =dbconn.system_js.fnGetFeaturesConfigValues(data);
+        return Response(json.dumps(result, default=json_util.default))  
+        # return Response("success")            
     else:        
-        return Response("failure")
+        return Response("failure")          
+
+
+#created by Arun.R.Menon
+#on 13-10-14
 @csrf_exempt
 @api_view(['GET','POST'])
-def fnGetLinkedInAuthorisationCode(request):
+def GetExitCriteriaView(request):
     #connect to our local mongodb
     db = Connection(settings.MONGO_SERVER_ADDR,settings.MONGO_PORT)
     #get a connection to our database
     dbconn = db[settings.MONGO_DB]
-    clnApiAuthorisationDetails = dbconn['clnApiAuthorisationDetails']
-    #return Response({"companyId":companyId,"name":name}) 
-    if request.method == 'GET':      
-        #stream = StringIO(request.body)
-        #data = JSONParser().parse(stream)
-        result =  dbconn.clnApiAuthorisationDetails.insert({'data':request.GET})
-        return Response(json.dumps(request.GET['code'], default=json_util.default))            
+    
+    if request.method == 'POST':      
+        result =dbconn.system_js.fnGetExitCriteria();
+        return Response(json.dumps(result, default=json_util.default))  
+        # return Response("success")            
     else:        
-        return Response("failure")    
+        return Response("failure")           
+        
+
+#created by Arun.R.Menon
+#on 13-10-14
+@csrf_exempt
+@api_view(['GET','POST'])
+def SaveCourseElementFormView(request):
+    #connect to our local mongodb
+    db = Connection(settings.MONGO_SERVER_ADDR,settings.MONGO_PORT)
+    #get a connection to our database
+    dbconn = db[settings.MONGO_DB]
+    
+    if request.method == 'POST':      
+        stream = StringIO(request.body)
+        data = JSONParser().parse(stream)
+        result =dbconn.system_js.fnSaveCourseElementForm(data);
+        # return Response(json.dumps(result, default=json_util.default))  
+        return Response("success")            
+    else:        
+        return Response("failure")                  
+
+
+#created by midhun sudhakar
+#on 31-12-2014
+@csrf_exempt
+@api_view(['GET','POST'])
+def forgotPassword(request):
+    #connect to our local mongodb
+    db = Connection(settings.MONGO_SERVER_ADDR,settings.MONGO_PORT)
+    dbconn = db[settings.MONGO_DB]
+    
+    if request.method == 'POST':      
+        stream = StringIO(request.body)
+        data = JSONParser().parse(stream)
+        user_email=data["user_email"]
+        try:
+            userdata=dbconn.system_js.fun_check_user_email_exists(user_email);
+            if userdata["result"]>0:
+                data = {
+                'username': userdata["userdata"]["userName"],
+                'password': userdata["userdata"]["password"]
+                }
+                message = get_template(settings.TEMPLATE_DIRS[0]+'/forgot_password.html').render(Context(data))
+                email = EmailMessage('baabtra.com accont password',message, to=[userdata["userdata"]["userName"]])
+                email.content_subtype = 'html'
+                a=email.send()
+                return Response(json.dumps("success", default=json_util.default))
+            else:
+                return Response(json.dumps("no_username", default=json_util.default))
+        except :
+           return Response(json.dumps("error", default=json_util.default))
+        
+    else:        
+        return Response(json.dumps("failed", default=json_util.default))  
+
+
+
+
+#created by Arun.R.Menon
+@csrf_exempt
+@api_view(['GET','POST'])
+def GetCourseElementsView(request):
+    #connect to our local mongodb
+    db = Connection(settings.MONGO_SERVER_ADDR,settings.MONGO_PORT)
+    #get a connection to our database
+    dbconn = db[settings.MONGO_DB]
+    stream = StringIO(request.body)
+    data = JSONParser().parse(stream)
+    if request.method == 'POST':      
+        result =dbconn.system_js.fnGetCourseElements(data['courseElementName']);
+        return Response(json.dumps(result, default=json_util.default))  
+        # return Response("success")            
+    else:        
+        return Response("failure")  
+
+
+#created by Arun.R.Menon
+@csrf_exempt
+@api_view(['GET','POST'])
+def DeleteCourseElementView(request):
+    #connect to our local mongodb
+    db = Connection(settings.MONGO_SERVER_ADDR,settings.MONGO_PORT)
+    #get a connection to our database
+    dbconn = db[settings.MONGO_DB]
+    
+    if request.method == 'POST':   
+        stream = StringIO(request.body)
+        data = JSONParser().parse(stream)   
+        result =dbconn.system_js.fnDeleteCourseElement(data);
+        # return Response(json.dumps(result, default=json_util.default))  
+        return Response("success")            
+    else:        
+        return Response("failure")  
+
+
+
+#created by Arun.R.Menon
+#on 13-10-14
+@csrf_exempt
+@api_view(['GET','POST'])
+def SaveExitCriteriaView(request):
+    #connect to our local mongodb
+    db = Connection(settings.MONGO_SERVER_ADDR,settings.MONGO_PORT)
+    #get a connection to our database
+    dbconn = db[settings.MONGO_DB]
+    
+    if request.method == 'POST':      
+        stream = StringIO(request.body)
+        data = JSONParser().parse(stream)
+        result =dbconn.system_js.fnSaveExitCriteria(data);
+        # return Response(json.dumps(result, default=json_util.default))  
+        return Response("success")            
+    else:        
+        return Response("failure")             
+
+
+#created by Arun.R.Menon
+@csrf_exempt
+@api_view(['GET','POST'])
+def DeleteExitCriteriaView(request):
+    #connect to our local mongodb
+    db = Connection(settings.MONGO_SERVER_ADDR,settings.MONGO_PORT)
+    #get a connection to our database
+    dbconn = db[settings.MONGO_DB]
+    
+    if request.method == 'POST':   
+        stream = StringIO(request.body)
+        data = JSONParser().parse(stream)   
+        result =dbconn.system_js.fnDeleteExitCriteria(data);
+        # return Response(json.dumps(result, default=json_util.default))  
+        return Response("success")            
+    else:        
+        return Response("failure")       
+
+#created by Arun.R.Menon
+@csrf_exempt
+@api_view(['GET','POST'])
+def RegisterUserView(request):
+    #connect to our local mongodb
+    db = Connection(settings.MONGO_SERVER_ADDR,settings.MONGO_PORT)
+    #get a connection to our database
+    dbconn = db[settings.MONGO_DB]
+    
+    if request.method == 'POST':   
+        stream = StringIO(request.body)
+        data = JSONParser().parse(stream)   
+        result=dbconn.system_js.fnRegisterUser(data);
+        return Response(json.dumps(result, default=json_util.default))  
+        # return Response("success")            
+    else:        
+        return Response("failure")                 
+
+
+#created by Arun.R.Menon
+@csrf_exempt
+@api_view(['GET','POST'])
+def FetchUserDetailsView(request):
+    #connect to our local mongodb
+    db = Connection(settings.MONGO_SERVER_ADDR,settings.MONGO_PORT)
+    #get a connection to our database
+    dbconn = db[settings.MONGO_DB]
+    
+    if request.method == 'POST':   
+        stream = StringIO(request.body)
+        data = JSONParser().parse(stream)   
+        result=dbconn.system_js.fnFetchUserDetails(data);
+        return Response(json.dumps(result, default=json_util.default))  
+        # return Response("success")            
+    else:        
+        return Response("failure")     
+
+
