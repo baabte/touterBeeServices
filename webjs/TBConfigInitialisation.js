@@ -24,7 +24,7 @@
                       setTimeout(function(){//timeout function to call the actvateSocialFeature ajax function.
                      
                       if(!inIframe()){ //checking the website is loaded inside iframe or not
-                          console.log(elemObj[e.target.id]);
+                          
                           activateSocialFeature(elemObj[e.target.id]); //calling the activateSocialFeature ajax function by passing element object as its parameter.
                           
                         }
@@ -78,10 +78,11 @@
     /*End of function to check the website is loaded inside the iframe   */ 
 
         //for sending the confirmation message to parent window.
-        window.parent.postMessage("loadJSsuccess", "*");
-          revStr='';
-          elemArr=[];
-          outcome={};
+        
+        window.parent.postMessage(JSON.parse(JSON.stringify({"message":"loadJSsuccess",currentPage:window.location.href})), "*");
+        revStr='';
+        elemArr=[];
+        outcome={};
         function receiveMessage(e){
             if(e.origin=="http://localhost:9001"){ //checking for origin for security purpose
               document.addEventListener('click', fnClickFreeze);
@@ -134,7 +135,7 @@
                 fnCallback(jsonResultBuffer);
             }
           };
-          xmlhttp.send(JSON.stringify({'urmId':123,'websiteId':321,'value':'','appId':'','feature':123,'featureType':111}));
+          xmlhttp.send(JSON.stringify({domainName:'http://localhost:9000'})); //window.location.hostname
           
         };
 
@@ -213,7 +214,7 @@
           for(var i = 0; i < searchEles.length; i++) {
             
               if(searchEles[i].tagName == 'SPAN') {
-                console.log(searchEles[i].innerText.indexOf('#'));
+                //console.log(searchEles[i].innerText.indexOf('#'));
                   if(searchEles[i].innerText.indexOf('#') == 1) {
                       matches.push(searchEles[i]);
                   }

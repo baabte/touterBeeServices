@@ -23,8 +23,13 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from datetime import datetime
 from django.shortcuts import render
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+from django.conf import settings
 from models import SocialFeatures #importing the socialfetaure model class
 import datetime
+import os
+
 #Author      : Akshath kumar M.
 #Description : To load the verified domains for configuration
 @csrf_exempt
@@ -58,7 +63,8 @@ def FnLoadTBeeConfig(request):
     if request.method == 'POST':      
         stream = StringIO(request.body)
         data = JSONParser().parse(stream)
-        result = list(clnSocialConfigDetails.find({'fkUserId':str(data['urmId']),'fkWebsiteId':str(data['websiteId'])}));
+        #result = list(clnSocialConfigDetails.find({'domainName':str(data['urmId']),'fkWebsiteId':str(data['websiteId'])}));
+        result = dbconn.system_js.fnLoadSocialConfigDetails(data['domainName']);
         return Response(json.dumps(result, default=json_util.default))            
     else:        
         return Response("failure")      
@@ -79,26 +85,27 @@ def FnSaveSocialConfigDetails(request):
         #data = JSONParser().parse(stream)
         #if(request.FILES.length>0):
         file_obj = request.FILES['file']#['candidate']
-        extension = file_obj.content_type.split('/')[0]
-        result = dbconn.system_js.FnSaveSocialConfigDetails(data);
-
-        filename=result.get('pic')
-        if(default_storage.exists(settings.FILEUPLOAD_PATH+'/socialConfigImages/'+str(filename))):
-            #if os.path.exists(self.path(name)):
-            #    os.remove(self.path(name))
-            path = default_storage.save(settings.FILEUPLOAD_PATH+'/socialConfigImages/'+str(filename), file_obj)
-            filenameArray=path.split('/')
-            actualfilename=filenameArray[len(filenameArray)-1]
-        else:
-            default_storage.delete(settings.FILEUPLOAD_PATH+'/socialConfigImages/'+str(filename))
-            path = default_storage.save(settings.FILEUPLOAD_PATH+'/socialConfigImages/'+str(filename), file_obj)
-            filenameArray=path.split('/')
-            actualfilename=filenameArray[len(filenameArray)-1]
-            filename = str(filename) + str(file_obj)
-            if not os.path.exists(settings.FILEUPLOAD_PATH+'/socialConfigImages/'+str(filename)): #checking if for the directory already exists or not
-                os.makedirs(settings.FILEUPLOAD_PATH+'/socialConfigImages/'+str(filename))
         
-        return Response(json.dumps(result, default=json_util.default))            
+        result = dbconn.system_js.FnSaveSocialConfigDetails(data);
+        if file_obj!=null:
+            extension = file_obj.content_type.split('/')[0]
+            filename=result.get('pic')
+            if(default_storage.exists(settings.FILEUPLOAD_PATH+'/socialConfigImages/'+str(filename))):
+                #if os.path.exists(self.path(name)):
+                #    os.remove(self.path(name))
+                path = default_storage.save(settings.FILEUPLOAD_PATH+'/socialConfigImages/'+str(filename), file_obj)
+                filenameArray=path.split('/')
+                actualfilename=filenameArray[len(filenameArray)-1]
+            else:
+                default_storage.delete(settings.FILEUPLOAD_PATH+'/socialConfigImages/'+str(filename))
+                path = default_storage.save(settings.FILEUPLOAD_PATH+'/socialConfigImages/'+str(filename), file_obj)
+                filenameArray=path.split('/')
+                actualfilename=filenameArray[len(filenameArray)-1]
+                filename = str(filename) + str(file_obj)
+                if not os.path.exists(settings.FILEUPLOAD_PATH+'/socialConfigImages/'+str(filename)): #checking if for the directory already exists or not
+                    os.makedirs(settings.FILEUPLOAD_PATH+'/socialConfigImages/'+str(filename))
+            
+            return Response(json.dumps(result, default=json_util.default))            
     else:        
         return Response("failure")      
 #Author      : Akshath kumar M.
@@ -198,7 +205,7 @@ def fnLoadBroadcastTypeTemplate(request):
         stream = StringIO(request.body)
         data = JSONParser().parse(stream)
         try:
-            result =  dbconn.system_js.fnGetBroadcastTypeTemplate(data['channelId'],data['broadcastTypeId'],data['urmId'],data['domainId'],data['currentPage'],'submit')
+            result =  dbconn.system_js.fnGetBroadcastTypeTemplate(data['channelId'],data['broadcastTypeId'],data['urmId'],data['domainId'],data['currentPage'],data['elementId'])
         except Exception as e:
             return Response(str(e))
         
