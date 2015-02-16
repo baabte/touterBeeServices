@@ -84,7 +84,7 @@
         elemArr=[];
         outcome={};
         function receiveMessage(e){
-            if(e.origin=="http://localhost:9001"){ //checking for origin for security purpose
+            if(e.origin=="http://www.touterbee.com"){ //checking for origin for security purpose
               document.addEventListener('click', fnClickFreeze);
              
               if(e.data=='freeze'){ //chcking for the message passed from parent window.
@@ -123,7 +123,7 @@
             xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
           }
 
-          xmlhttp.open("POST", "http://127.0.0.1:8000/FnLoadTBeeConfig/", true);  //service url
+          xmlhttp.open("POST", "http://services.touterbee.com/FnLoadTBeeConfig/", true);  //service url
           xmlhttp.setRequestHeader("content-type", "application/json");  
           xmlhttp.setRequestHeader("Accept", "application/json");
           xmlhttp.responseType = 'json';
@@ -177,7 +177,7 @@
             xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
           }
 
-          xmlhttp.open("POST", "http://127.0.0.1:8000/FnActivateEvent/", true);
+          xmlhttp.open("POST", "http://services.touterbee.com/FnActivateEvent/", true);
           xmlhttp.setRequestHeader("content-type", "application/json");
           xmlhttp.setRequestHeader("Accept", "application/json");
 
