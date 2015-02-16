@@ -74,12 +74,13 @@ ROOT_URLCONF = 'Djproject.urls'
 WSGI_APPLICATION = 'Djproject.wsgi.application'
 
 
-MONGO_SERVER_ADDR = 'localhost' #Mongodb address 
-#MONGO_SERVER_ADDR = '192.168.2.20' #Mongodb address
+#MONGO_SERVER_ADDR = 'localhost' #Mongodb address 
+MONGO_SERVER_ADDR = '192.168.2.20' #Mongodb address
 #MONGO_SERVER_ADDR = '117.240.93.254' #Mongodb address
 MONGO_PORT = 27017 #Mongodb port
 
-MONGO_DB = 'baabtra_db'  #Database name
+#MONGO_DB = 'baabtra_db'  #Database name
+MONGO_DB = 'touter_bee'  #Database name
 
 FILEUPLOAD_PATH="uploaded" #path for uploading the files
 RESUME_PATH='http://localhost:8000/files/resume/' #path for mailing the resume link
