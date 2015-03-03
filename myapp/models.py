@@ -143,11 +143,11 @@ class SocialFeatures(object):
 
 		oauth_args = dict(client_id = FACEBOOK_APP_ID,client_secret = FACEBOOK_APP_SECRET,grant_type = 'client_credentials')
 		attach = {
-		"name": 'HEI THIS IS MY TESTING POST',
-		"link": 'http://www.baabtra.com',
-		"caption": 'test post',
+		"name": resultObj['title'],
+		"link": resultObj['link'],
+		"caption": resultObj['caption'],
 		"description": strip_tags(resultObj['content']),
-		"picture" : 'http://baabtra.com/assets/images/logo/baabtralogo.png'#SOCIAL_IMG_PATH+str(inputObj['imageName']),
+		"picture" : SOCIAL_IMG_PATH+str(inputObj['imageName']),
 		#"page_token" : page_token,
 		}
 
