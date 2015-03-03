@@ -84,7 +84,7 @@
         elemArr=[];
         outcome={};
         function receiveMessage(e){
-            if(e.origin=="http://www.touterbee.com"){ //checking for origin for security purpose
+            if(e.origin=="http://touterbee.com"){ //checking for origin for security purpose
               document.addEventListener('click', fnClickFreeze);
              
               if(e.data=='freeze'){ //chcking for the message passed from parent window.
@@ -135,7 +135,7 @@
                 fnCallback(jsonResultBuffer);
             }
           };
-          xmlhttp.send(JSON.stringify({domainName:'http://localhost:9000'})); //window.location.hostname
+          xmlhttp.send(JSON.stringify({domainName:'http://services.touterbee.com'})); //window.location.hostname
           
         };
 
