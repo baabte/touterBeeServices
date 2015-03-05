@@ -36,6 +36,7 @@ def Login(request):
                 else:
                     real_ip = request.META.get('REMOTE_ADDR')
                 LoginData['ip']=real_ip
+                #print(LoginData)
                 # log = dbconn.system_js.fnLogin_dummy(LoginData)
                 log = dbconn.system_js.fnLogin(LoginData);
             except Exception as e:
@@ -78,6 +79,7 @@ def loadlogUserdata(request):
         stream = StringIO(request.body)
         data = JSONParser().parse(stream)
         UserDataObjId=data["UserDataObjId"]
+        print(UserDataObjId)
         try:
            result=dbconn.system_js.fun_load_log_user_data(UserDataObjId)    
         except:

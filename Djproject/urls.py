@@ -118,6 +118,7 @@ urlpatterns = patterns('',
     url(r'^FnAddNewDomain/$', 'myapp.domain-verification.FnAddNewDomain'),
     url(r'^FnDeActivateDomain/$', 'myapp.domain-verification.FnDeActivateDomain'),
     url(r'^FnDomainNameExists/$', 'myapp.domain-verification.FnDomainNameExists'),
-    url(r'^FnLoadDomainForConfig/$', 'myapp.SocialConfiguration.FnLoadDomainForConfig')
+    url(r'^FnLoadDomainForConfig/$', 'myapp.SocialConfiguration.FnLoadDomainForConfig'),
+    url(r'^UploadProfilePic/$', 'myapp.commonViews.UploadProfilePicView', name='UploadProfilePic'),
     #url(r'^new-activation-link/(?P<user_id>\d+)/$', 'new_activation_link')
 )+ static('/files/', document_root=settings.FILEUPLOAD_PATH)+ static('/TBConfigFiles/', document_root=settings.CONFIG_FILES_PATH)
