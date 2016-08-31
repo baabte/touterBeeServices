@@ -146,11 +146,11 @@ def FnActivateEvent(request):
 #         stream = StringIO(request.body)
 #         data = JSONParser().parse(stream)
 #         inputObj=data['inputObj'] #input object for posting 
-#         page_token='CAACEdEose0cBAE7zjo5m0fTDONbgLmAB6kMPrMZC1pn3U4TzQD7pQlazUz7yXA9C0BrHKirWOb5ZAbh7XRcViao7ZCvPKJJsRKHxen0jInVw6kvVZBeiAOFfIgLmTi0FiYb2St76c8pV2olM2cIZBohlxpt2y8QEK8yj4NZBFAFKvYz8PRdKeS42kxkBDq9PYXpdRI1p9CqUytRVmPn7BZC'
-#         access_token_page='CAACEdEose0cBAKXIpivWvKqfnfRKK0HsRIAfBIeD9yMTAolkvd5zq5QCJpYPjg0megyNfcPDFYjUgCAnCmJ8ZBZBXcyIMd25FepNGvlOUJOiZBghTgfl6xNbsk7Ipa7s0vZBCTWa3ZBes1T7A95CSKdswL1LGI5IAXfhcbD3nY2ZBEQD4S4PU1sBdDEvdi9tZBNiXLn2m1bDZCHY0VqxpLgS'
-#         FACEBOOK_APP_ID = '610577519050579'
-#         FACEBOOK_APP_SECRET = '281797352ce378d168bc40ce9afe3c2c'
-#         FACEBOOK_PROFILE_ID = '100006914924908'
+#         page_token=''
+#         access_token_page=''
+#         FACEBOOK_APP_ID = ''
+#         FACEBOOK_APP_SECRET = ''
+#         FACEBOOK_PROFILE_ID = ''
 
 #         oauth_args = dict(client_id = FACEBOOK_APP_ID,client_secret = FACEBOOK_APP_SECRET,grant_type = 'client_credentials')
 
